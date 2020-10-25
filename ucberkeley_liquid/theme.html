@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<html xml:lang="<{$xoops_langcode}>" xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="content-type" content="text/html; charset=<{$xoops_charset}>">
+<meta http-equiv="content-language" content="<{$xoops_langcode}>">
+<meta name="robots" content="<{$xoops_meta_robots}>">
+<meta name="keywords" content="<{$xoops_meta_keywords}>">
+<meta name="description" content="<{$xoops_meta_description}>">
+<meta name="rating" content="<{$xoops_meta_rating}>">
+<meta name="author" content="<{$xoops_meta_author}>">
+<meta name="copyright" content="<{$xoops_meta_copyright}>">
+<meta name="generator" content="XOOPS">
+<title><{$xoops_sitename}> - <{$xoops_pagetitle}></title>
+<link href="<{$xoops_url}>/favicon.ico" rel="SHORTCUT ICON">
+<script type="text/javascript">
+<!--
+<{$xoops_js}>
+//-->
+</script>
+<script type="text/javascript" src="<{$xoops_imageurl}>scripts/styleswitcher.js"></script>
+<style rel="stylesheet" type="text/css" media="screen">@import url(<{$xoops_imageurl}>style/style.css);</style>
+<link rel="alternate stylesheet" media="screen" type="text/css" href="<{$xoops_imageurl}>style/text-small.css" title="small">
+<link rel="alternate stylesheet" media="screen" type="text/css" href="<{$xoops_imageurl}>style/text-large.css" title="large">
+<{$xoops_module_header}>
+</head>
+<body>
+<{if $xoops_showrblock == 1}>
+<div id="outer"> 
+  <div id="newheader">
+<{else}>
+<div id="outer2"> 
+  <div id="newheader2">
+<{/if}> 
+    <div id="topwhite">
+
+	<div class="rbroundbox">
+<div class="rbtop"><div></div></div>
+<div class="rbcontent">
+<p>
+<{if $xoops_isuser}> Hi <a href="<{$xoops_url}>/user.php"><{$xoops_uname}></a>&nbsp;&nbsp;&nbsp;»&nbsp;<a href="<{$xoops_url}>/user.php">Your Account </a>&nbsp;&nbsp;»&nbsp;<a href="<{$xoops_url}>/user.php?op=logout">Logout</a>
+<{else}>
+<a href="<{$xoops_url}>/user.php">Members sign in</a> | Not a member? <a href="<{$xoops_url}>/register.php">Sign up</a><{/if}>
+			 | Text Size:
+			<a href="#" onclick="setActiveStyleSheet('small'); return false;">Small</a> |
+			<a href="#" onclick="setActiveStyleSheet(''); return false;">Medium</a> | 
+			<a href="#" onclick="setActiveStyleSheet('large'); return false;">Large</a>
+			
+			</p></div><!-- /rbcontent -->
+<div class="rbbot"><div></div></div>
+</div><!-- /rbroundbox -->
+
+	</div>
+    <div id="headerouter"> 
+      <div id="header"> 
+        <div id="topleft"><a href="<{$xoops_url}>/"><img src="<{$xoops_imageurl}>images/logo.gif" class="logo" alt="One" title="One"></a></div><div class="banner"><{$xoops_banner}></div><br style="clear:both">
+        <!-- don't move this -->
+      </div>
+    </div>
+
+<!-- start menu -->
+<{php}>
+global $xoopsDB ,$xoopsModule , $xoopsUser, $dirname ;
+$xoops_url = XOOPS_URL ;
+
+if ( isset($xoopsModule)) {
+
+$dirname = $xoopsModule->getVar( 'dirname' ) ;
+}
+
+else
+{
+$dirname = "home";
+}
+
+// Get current filename to determine non-mod pages for top level nav.
+
+$url = $_SERVER['REQUEST_URI'];
+$url_array = parse_url($url);
+$path = $url_array['path'];
+$query = $url_array['query'];
+$path_array = explode("/", $path);
+$dir = $path_array[5];
+//echo $dir;
+//echo $path;
+//echo $url;
+//echo $query;
+//echo $path;
+
+ $table=$xoopsDB->prefix('tb_tabs');
+ $quer=sprintf("select * from $table order by parent_id , tb_ord Desc",$xoopsDB->prefix('tb_tabs'));
+
+ $res=$xoopsDB->query($quer);
+
+
+echo "<div id='content-nav'>";
+
+
+ 
+ while (false !== ($row=$xoopsDB->fetchArray($res))){
+     eval("\$condition=$row[activ_cond];");
+   if ($condition) { $select_row=$row; }
+ }
+
+$res=$xoopsDB->query("select * from $table where parent_id=$select_row[id] order by tb_ord DESC");
+
+while (false !== ($row=$xoopsDB->fetchArray($res))) {
+$lies.=sprintf("<li><a href='%s/$row[link]'>$row[name]</a></li>",XOOPS_URL);
+}
+$tail=$select_row[parent_id]==0?"<ul>$lies</ul>":"";
+
+ echo get_child_menu($select_row[id],"$tail");
+ 
+
+echo "</div>\n" ;
+  
+  
+		
+function get_child_menu($sel_id ,$child_out=''){
+	global $xoopsDB,$xoops_url;
+
+	 $table=$xoopsDB->prefix('tb_tabs');
+   	$quer="select parent_id from $table where id=$sel_id order by tb_ord DESC";
+   	$res=$xoopsDB->query($quer);
+	$row=$xoopsDB->fetchArray($res);
+	$pid=$row[parent_id];
+
+
+	$quer="select * from $table where parent_id=$pid order by tb_ord DESC";
+   	$res=$xoopsDB->query($quer);
+ if ( $xoopsDB->getRowsNum($res) == 0 ) {return $child_out;}
+
+
+
+			
+	while (false !== ($row=$xoopsDB->fetchArray($res))) {
+	$selected=''; $child='';  
+	if ($row[id]==$sel_id) {$selected="class='here'";$next[id]=$row[parent_id];$child=$child_out; }
+	$output.= sprintf("<li><a href='%s/$row[link]' $selected>$row[name]</a>$child</li>",XOOPS_URL);		  
+
+	}
+
+	$output=get_child_menu($next[id],sprintf("<ul %s >\n %s</ul>\n",
+				$pid==0?"id='navigation'":'',
+				$output));
+
+	return $output;
+
+}
+
+<{/php}>
+<!-- end menu -->
+<div style="clear:both"></div>
+</div>
+<!-- end menu -->
+<{if $xoops_lblocks}>
+<div id="left">
+			<!-- Start left blocks loop -->
+            <{foreach item=block from=$xoops_lblocks}>
+			<!-- start block -->
+            <{include file="ucberkeley_liquid/themeblocks/theme_blockleft.html"}>
+			<!-- end block -->
+            <{/foreach}>
+          <!-- End left blocks loop -->
+</div>
+  <{/if}>
+<{if $xoops_showrblock == 1}>
+<div id="right">
+<!-- Start right blocks loop -->
+            <{foreach item=block from=$xoops_rblocks}>
+			<!-- start block -->
+            <{include file="ucberkeley_liquid/themeblocks/theme_blockright.html"}>
+			<!-- end block -->
+			 <{/foreach}>
+			 <!-- End right blocks loop -->
+</div>
+<{/if}>
+<div id="centrecontent">
+		<!-- Display center blocks if any -->
+        
+		<{if $xoops_showcblock == 1}>
+			<div id="outerCCol">
+			
+			<!-- Start center-center col -->
+			<div id="ccCol">
+			<!-- Start center-center blocks loop -->
+            <{foreach item=block from=$xoops_ccblocks}>
+			<!-- start block -->
+            <{include file="ucberkeley_one/themeblocks/theme_blockcenter_c.html"}>
+			<!-- end block -->
+			<{/foreach}>
+			<!-- End center-center blocks loop -->
+			<!-- End center-center col -->
+			</div>
+
+			<!-- Start center-left col -->
+			<div id="clCol">
+			<!-- Start center-left blocks loop -->
+            <{foreach item=block from=$xoops_clblocks}>
+			<!-- start block -->
+            <{include file="ucberkeley_one/themeblocks/theme_blockcenter_l.html"}>
+			<!-- end block -->
+			<{/foreach}>
+			<!-- End center-left blocks loop -->
+			<!-- End center-left col -->
+			</div>
+
+			<!-- Start center-right col -->
+			<div id="crCol">
+			<!-- Start center-right blocks loop -->
+            <{foreach item=block from=$xoops_crblocks}>
+			<!-- start block -->
+            <{include file="ucberkeley_one/themeblocks/theme_blockcenter_r.html"}>
+			<!-- end block -->
+			<{/foreach}>
+			<!-- End center-right blocks loop -->
+			<!-- End center-right col -->
+			</div>
+
+		 <!-- End display center blocks -->
+			</div>
+			<div id="ccfinished"></div>
+        <{/if}>
+			<{$xoops_contents}>
+</div>
+<div id="clearfooter"></div>
+  <!-- to clear footer -->
+</div>
+<!-- end outer div -->
+<div id="footer"><p><{$xoops_footer}></p>
+<p><a href="<{$xoops_url}>/modules/wfchannel/index.php?pagenum=2">Privacy</a> | <a href="<{$xoops_url}>/modules/wfchannel/index.php?pagenum=9">About Us</a> | <a href="<{$xoops_url}>/modules/wfchannel/index.php?pagenum=10">Legal</a> | <a href="<{$xoops_url}>/modules/wfchannel/index.php?pagenum=11">Program Policies</a> </p>
+</div>
+</body>
+</html>
